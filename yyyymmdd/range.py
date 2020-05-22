@@ -11,7 +11,7 @@ from .misc import classproperty
 
 class DateRange(object):
     """
-    A ``range <https://docs.python.org/3.8/library/functions.html#func-range>`_ -like type, whose
+    A `range <https://docs.python.org/3.8/library/functions.html#func-range>`_ -like type, whose
     elements are ``Date``s.
 
     This class mostly follows the semantics of the builtin ``range`` type.  E.g.,

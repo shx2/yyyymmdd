@@ -46,8 +46,8 @@ Here is an example::
 ``DateRange``
 ====================================
 
-A ``DateRange`` is a ``range <https://docs.python.org/3.8/library/functions.html#func-range>`_ -like type,
-whose elements are ``Date``s.
+A ``DateRange`` is a `range <https://docs.python.org/3.8/library/functions.html#func-range>`_ -like type,
+whose elements are ``Date`` objects.
 
 This class mostly follows the semantics of the builtin ``range`` type.  E.g.,
 stop is exclusive, behavior of steps, negative steps, slicing,
