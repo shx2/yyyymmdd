@@ -3,14 +3,16 @@ The ``Date`` class.
 """
 
 import datetime as _dt
+import pytz
+
 from .misc import classproperty
+from .tz import get_timezone
 
 
 ################################################################################
 # Constants
 
 _dtdate = _dt.date
-_today = _dtdate.today
 
 _FORMATS = ['%Y%m%d', '%Y-%m-%d']
 
@@ -79,8 +81,8 @@ class Date(_dtdate):
 
     @classmethod
     def today(cls):
-        """ Today's date, in local timezone. """
-        return cls(super().today())
+        """ Today's date, in current timezone. """
+        return cls(_today())
 
     @classmethod
     def utctoday(cls):
@@ -204,6 +206,18 @@ class Date(_dtdate):
 
 ################################################################################
 # Private functions
+
+def _today():
+    tz = get_timezone()
+    if tz is None:
+        # local
+        return _dtdate.today()
+    else:
+        # convert utc to TIMEZONE
+        t_utc = pytz.utc.localize(_dt.datetime.utcnow())
+        t_local = t_utc.astimezone(tz)
+        return t_local.date()
+
 
 def _utctoday():
     return _dt.datetime.utcnow().date()
