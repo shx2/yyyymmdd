@@ -82,6 +82,10 @@ Here is an example::
     True
     >>> list(DateRange.from_string('2020515:2020401:-7'))  # negative step
     [Date(2020515), Date(2020508), Date(2020501), Date(2020424), Date(2020417), Date(2020410), Date(2020403)]
+    >>> DateRange.from_string('20200101:%+31')  # "%" means "the date on the other side"
+    DateRange(20200101, 20200201)
+    >>> DateRange.from_string('%-365:20200101')  # "%" means "the date on the other side"
+    DateRange(20190101, 20200101)
 
 
 
@@ -123,4 +127,3 @@ Installation
 Using pip::
 
     pip install yyyymmdd
-

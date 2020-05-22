@@ -24,6 +24,7 @@ class DateRange(object):
 
     DATE_TYPE = Date
     DELIM = ':'
+    OTHER_SIDE_MARKER = '%'
     EMPTY_RANGE_STRING = 'NONE'
     FULL_RANGE_STRING = 'ALL'
 
@@ -216,8 +217,31 @@ class DateRange(object):
 
         elif 2 <= n <= 3:
             # start and stop, and possibly step
-            d1 = cls.DATE_TYPE(parts[0])
-            d2 = cls.DATE_TYPE(parts[1])
+
+            def has_marker(p, m=cls.OTHER_SIDE_MARKER):
+                return (p == m) or (p.startswith(m) and p[len(m)] in '+-')
+
+            def relative_to(part, rel_to, m=cls.OTHER_SIDE_MARKER):
+                offset_str = part[len(cls.OTHER_SIDE_MARKER):]
+                if offset_str:
+                    # e.g. '%+10'
+                    offset = int(offset_str)
+                else:
+                    # just '%'
+                    offset = 0
+                return rel_to + offset
+
+            marker1 = has_marker(parts[0])
+            marker2 = has_marker(parts[1])
+            if marker1:
+                d2 = cls.DATE_TYPE(parts[1])
+                d1 = relative_to(parts[0], d2)
+            elif marker2:
+                d1 = cls.DATE_TYPE(parts[0])
+                d2 = relative_to(parts[1], d1)
+            else:
+                d1 = cls.DATE_TYPE(parts[0])
+                d2 = cls.DATE_TYPE(parts[1])
             if n == 3:
                 step = int(parts[2])
             else:
