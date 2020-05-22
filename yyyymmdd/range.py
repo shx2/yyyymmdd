@@ -3,7 +3,7 @@ The ``DateRange`` class.
 """
 
 from .date import Date
-from .misc import classproperty
+from .misc import classproperty, egcd as _egcd
 
 
 ################################################################################
@@ -274,6 +274,61 @@ class DateRange(object):
         if len(self) == 1:
             return str(self[0])
         return self.to_string('', '')
+
+    # ===========================================================================
+    # Intersection
+    # ===========================================================================
+
+    def __and__(self, other):
+        return self.intersection(other)
+
+    def intersection(self, other):
+        """
+        Calculate the intersection of the two DateRanges and return the result as a DateRange.
+
+        This implementation was copied (and adjusted) from rangeplus
+        (https://github.com/avnr/rangeplus).
+        """
+
+        # check steps have the same sign
+        if (self.step > 0) != (other.step > 0):
+            raise ValueError('Intersection is undefined for steps with opposite signs: %r & %r' % (
+                self, other))
+
+        # more helpers
+
+        def stop_min(x, y):
+            return None if x is None and y is None \
+                else x if y is None else y if x is None else min(x, y)
+
+        def stop_max_inv(x, y):
+            return None if x is None and y is None \
+                else x if y is None else y if x is None else max(x, y)
+
+        # return empty Range if either ranges is empty
+        empty = self.empty()
+        if not self or not other:
+            return empty()
+
+        # both directions are the same
+        step0, step1, sign, offset = (abs(self.step), abs(other.step),
+                                      (self.step > 0) - (self.step < 0), other.start - self.start)
+        gcd, x, y = _egcd(step0, step1)
+        interval0, interval1 = step0 // gcd, step1 // gcd  # calculate the coprime intervals
+        step = interval0 * interval1 * gcd * sign
+        if offset % gcd != 0:  # return empty result if offset not alligned on gcd
+            return empty()
+
+        # Apply Chinese Remainder Theorem
+        # x % interval1 means inverse_mod(interval0, interval1)
+        crt = (offset * interval0 * (x % interval1)) % step
+        filler = 0
+        if sign > 0 and offset > 0 or sign < 0 and offset < 0:
+            gap = offset - crt
+            filler = gap if 0 == gap % step else (gap // step + 1) * step
+        start = self.start + crt + filler
+        stop = stop_min(self.stop, other.stop) if sign > 0 else stop_max_inv(self.stop, other.stop)
+        return type(self)(start, stop, step)
 
     # ===========================================================================
     # privates
