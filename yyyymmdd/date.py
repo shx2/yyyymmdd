@@ -228,6 +228,9 @@ def _to_dt_date(x):
         return x
     elif isinstance(x, str):
         return _from_string(x)
+    elif isinstance(x, bytes):
+        # for pickle support
+        return _dtdate(x)
     elif isinstance(x, int):
         return _from_int(x)
     else:

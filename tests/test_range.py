@@ -4,6 +4,7 @@ Unit-tests for DateRange.
 
 import unittest
 import math
+import pickle
 from yyyymmdd import Date, DateRange
 from .test_date import TEST_DATES
 
@@ -141,6 +142,12 @@ class DateRangeTest(unittest.TestCase):
         # singles with different step are equal
         self.assertEqual(DateRange(D1, D1 + 1), DateRange(D1, D1 + 100, 200))
         self.assertNotEqual(DateRange(D1, D1 + 1), DateRange(D1, D1 + 100, 70))
+
+    def test_pickle(self):
+        for r1 in TEST_RANGES.values():
+            r2 = pickle.loads(pickle.dumps(r1))
+            self.assertEqual(r1, r2)
+            self.assertEqual(type(r1), type(r2))
 
 
 ################################################################################

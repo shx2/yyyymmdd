@@ -4,6 +4,7 @@ Unit-tests for Date.
 
 import unittest
 import random
+import pickle
 import datetime
 from datetime import date as DTDATE
 from yyyymmdd import Date
@@ -142,6 +143,13 @@ class DateTest(unittest.TestCase):
             self.assertEqual(me.year, z.year)
             self.assertEqual(me.month, z.month)
             self.assertEqual(me.day, z.day)
+
+    def test_pickle(self):
+        for x in TEST_DATES:
+            d1 = Date(x)
+            d2 = pickle.loads(pickle.dumps(d1))
+            self.assertEqual(d1, d2)
+            self.assertEqual(type(d1), type(d2))
 
 
 ################################################################################
