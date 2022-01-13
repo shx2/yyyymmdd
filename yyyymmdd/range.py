@@ -3,11 +3,12 @@ The ``DateRange`` class.
 """
 
 from .date import Date
-from .misc import classproperty, egcd as _egcd
-
+from .misc import classproperty
+from .misc import egcd as _egcd
 
 ################################################################################
 # The DateRange class
+
 
 class DateRange(object):
     """
@@ -23,10 +24,10 @@ class DateRange(object):
     """
 
     DATE_TYPE = Date
-    DELIM = ':'
-    OTHER_SIDE_MARKER = '%'
-    EMPTY_RANGE_STRING = 'NONE'
-    FULL_RANGE_STRING = 'ALL'
+    DELIM = ":"
+    OTHER_SIDE_MARKER = "%"
+    EMPTY_RANGE_STRING = "NONE"
+    FULL_RANGE_STRING = "ALL"
 
     # ===============================================================================================
     # ctor
@@ -110,7 +111,7 @@ class DateRange(object):
         try:
             return self._ordrange.index(ordinal)
         except ValueError:
-            raise ValueError('%r is not in range' % date) from None
+            raise ValueError("%r is not in range" % date) from None
 
     def count(self, date):
         """ Same as ``range.count``. """
@@ -139,10 +140,17 @@ class DateRange(object):
     # str and repr
     # ===========================================================================
 
-    def to_string(self,
-                  opening_bracket='[', closing_bracket=')', *,
-                  date_format=None, delim=None, step_delim=None, include_step=None,
-                  empty_range_string=EMPTY_RANGE_STRING):
+    def to_string(
+        self,
+        opening_bracket="[",
+        closing_bracket=")",
+        *,
+        date_format=None,
+        delim=None,
+        step_delim=None,
+        include_step=None,
+        empty_range_string=EMPTY_RANGE_STRING
+    ):
 
         if empty_range_string is not None and not self:
             return empty_range_string
@@ -165,7 +173,7 @@ class DateRange(object):
             tokens.extend([step_delim, str(self.step)])
 
         tokens.append(closing_bracket)
-        return ''.join(tokens)
+        return "".join(tokens)
 
     def __str__(self):
         return self.to_string()
@@ -174,7 +182,7 @@ class DateRange(object):
         tokens = [self.start, self.stop]
         if self.step != 1:
             tokens.append(self.step)
-        return '%s(%s)' % (type(self).__name__, ', '.join([str(x) for x in tokens]))
+        return "%s(%s)" % (type(self).__name__, ", ".join([str(x) for x in tokens]))
 
     # ===========================================================================
     # from string
@@ -198,13 +206,13 @@ class DateRange(object):
         DateRange(20120704, 20120706)
         """
 
-        if s in (cls.FULL_RANGE_STRING, 'FULL'):
+        if s in (cls.FULL_RANGE_STRING, "FULL"):
             return cls.full()
-        if s in (cls.EMPTY_RANGE_STRING, 'EMPTY'):
+        if s in (cls.EMPTY_RANGE_STRING, "EMPTY"):
             return cls.empty()
 
         # remove brackets:
-        if s.startswith('[') and s.endswith(')'):
+        if s.startswith("[") and s.endswith(")"):
             s = s[1:-1]
 
         # split to parts:
@@ -219,10 +227,10 @@ class DateRange(object):
             # start and stop, and possibly step
 
             def has_marker(p, m=cls.OTHER_SIDE_MARKER):
-                return (p == m) or (p.startswith(m) and p[len(m)] in '+-')
+                return (p == m) or (p.startswith(m) and p[len(m)] in "+-")
 
             def relative_to(part, rel_to, m=cls.OTHER_SIDE_MARKER):
-                offset_str = part[len(cls.OTHER_SIDE_MARKER):]
+                offset_str = part[len(cls.OTHER_SIDE_MARKER) :]
                 if offset_str:
                     # e.g. '%+10'
                     offset = int(offset_str)
@@ -249,7 +257,7 @@ class DateRange(object):
             return cls(d1, d2, step)
 
         else:
-            raise ValueError('Invalid %s string: %r' % (cls.__name__, s))
+            raise ValueError("Invalid %s string: %r" % (cls.__name__, s))
 
     # ===========================================================================
     # misc
@@ -258,9 +266,9 @@ class DateRange(object):
     def replace(self, *, start=None, stop=None, step=None):
         """ Create a range like self, with different parts (start/stop/step) """
         kwargs = {}
-        kwargs['start'] = start if start is not None else self.start
-        kwargs['stop'] = stop if stop is not None else self.stop
-        kwargs['step'] = step if step is not None else self.step
+        kwargs["start"] = start if start is not None else self.start
+        kwargs["stop"] = stop if stop is not None else self.stop
+        kwargs["step"] = step if step is not None else self.step
         return type(self)(**kwargs)
 
     @classproperty
@@ -297,7 +305,7 @@ class DateRange(object):
         """
         if len(self) == 1:
             return str(self[0])
-        return self.to_string('', '')
+        return self.to_string("", "")
 
     # ===========================================================================
     # Intersection
@@ -316,18 +324,34 @@ class DateRange(object):
 
         # check steps have the same sign
         if (self.step > 0) != (other.step > 0):
-            raise ValueError('Intersection is undefined for steps with opposite signs: %r & %r' % (
-                self, other))
+            raise ValueError(
+                "Intersection is undefined for steps with opposite signs: %r & %r"
+                % (self, other)
+            )
 
         # more helpers
 
         def stop_min(x, y):
-            return None if x is None and y is None \
-                else x if y is None else y if x is None else min(x, y)
+            return (
+                None
+                if x is None and y is None
+                else x
+                if y is None
+                else y
+                if x is None
+                else min(x, y)
+            )
 
         def stop_max_inv(x, y):
-            return None if x is None and y is None \
-                else x if y is None else y if x is None else max(x, y)
+            return (
+                None
+                if x is None and y is None
+                else x
+                if y is None
+                else y
+                if x is None
+                else max(x, y)
+            )
 
         # return empty Range if either ranges is empty
         empty = self.empty()
@@ -335,10 +359,17 @@ class DateRange(object):
             return empty()
 
         # both directions are the same
-        step0, step1, sign, offset = (abs(self.step), abs(other.step),
-                                      (self.step > 0) - (self.step < 0), other.start - self.start)
+        step0, step1, sign, offset = (
+            abs(self.step),
+            abs(other.step),
+            (self.step > 0) - (self.step < 0),
+            other.start - self.start,
+        )
         gcd, x, y = _egcd(step0, step1)
-        interval0, interval1 = step0 // gcd, step1 // gcd  # calculate the coprime intervals
+        interval0, interval1 = (
+            step0 // gcd,
+            step1 // gcd,
+        )  # calculate the coprime intervals
         step = interval0 * interval1 * gcd * sign
         if offset % gcd != 0:  # return empty result if offset not alligned on gcd
             return empty()
@@ -351,8 +382,173 @@ class DateRange(object):
             gap = offset - crt
             filler = gap if 0 == gap % step else (gap // step + 1) * step
         start = self.start + crt + filler
-        stop = stop_min(self.stop, other.stop) if sign > 0 else stop_max_inv(self.stop, other.stop)
+        stop = (
+            stop_min(self.stop, other.stop)
+            if sign > 0
+            else stop_max_inv(self.stop, other.stop)
+        )
         return type(self)(start, stop, step)
+
+    # ===========================================================================
+    # mereological part structure
+    # ===========================================================================
+
+    def __lt__(self, other):
+        return self.is_proper_part(other)
+
+    def __gt__(self, other):
+        return other.is_proper_part(self)
+
+    def __le__(self, other):
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        if not bool(self._ordrange):
+            return True
+        return (other._ordrange.start <= self._ordrange.start) and (
+            self._ordrange.stop <= other._ordrange.stop
+        )
+
+    def __ge__(self, other):
+        return other <= self
+
+    def is_adjacent(self, other):
+        """
+        Tests whether this DateRange is adjacent to (externally connected)
+        to the given DateRange other.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        return (self._ordrange.stop == other._ordrange.start) or (
+            other._ordrange.stop == self._ordrange.start
+        )
+
+    def is_proper_part(self, other):
+        """
+        Tests whether this DateRange is a proper part of (is fully
+        contained in) the given DateRange other.
+
+        X is a proper part of Y if X is a part of Y and Y is not a part of X.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        if not bool(self._ordrange):
+            return True
+        return (
+            (other._ordrange.start <= self._ordrange.start)
+            and (self._ordrange.stop <= other._ordrange.stop)
+            and (self._ordrange != other._ordrange)
+        )
+
+    def overlaps(self, other):
+        """
+        Tests whether this DateRange overlaps with the given DateRange other.
+
+        X and Y overlap if there is a part of X that is also a part of Y.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        return (bool(self._ordrange) and bool(other._ordrange)) and (
+            (other._ordrange.start <= self._ordrange.start < other._ordrange.stop)
+            or (self._ordrange.start <= other._ordrange.start < self._ordrange.stop)
+        )
+
+    def underlaps(self, other):
+        """
+        Finds the underlap of this DateRange and the given DateRange other.
+
+        The X and Y underlap if X and Y overlap or are adjacent.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        return self.is_adjacent(other) or self.overlaps(other)
+
+    def __or__(self, other):
+        return self.union(other)
+
+    def union(self, other):
+        """
+        Computes the union of this DateRange and the given DateRange other.
+
+        The union of X and Y is only defined if X and Y underlap.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        if not self.underlaps(other):
+            raise ValueError(
+                "DateRange union is undefined for ranges that are not adjacent and do not overlap: %r & %r"
+                % (self, other)
+            )
+        return DateRange(
+            self._o2d(min(self._ordrange.start, other._ordrange.start)),
+            self._o2d(max(self._ordrange.stop, other._ordrange.stop)),
+        )
+
+    def __sub__(self, other):
+        return self.difference(other)
+
+    def difference(self, other):
+        """
+        Computes the dates from this DateRange less the dates in the given
+        DateRange other.
+
+        This method returns a list, because the difference can result
+        up to two contiguous date ranges.
+        """
+        if self.step != 1 or other.step != 1:
+            raise ValueError(
+                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+                % (self, other)
+            )
+        # ***A***
+        #   ***B***
+        # gives:
+        # **
+        #
+        #   ***A***
+        # ***B***
+        # gives:
+        #        **
+        #
+        # *****A*****
+        #   **B**
+        # gives:
+        # **     ****
+        if self.overlaps(other):
+            part1 = DateRange(
+                self._o2d(self._ordrange.start), self._o2d(other._ordrange.start)
+            )
+            part2 = DateRange(
+                self._o2d(other._ordrange.stop), self._o2d(self._ordrange.stop)
+            )
+            if bool(part1):
+                if bool(part2):
+                    return [part1, part2]
+                else:
+                    return [part1]
+            else:
+                if bool(part2):
+                    return [part2]
+                return [DateRange.empty()]
+        else:
+            return self
 
     # ===========================================================================
     # privates

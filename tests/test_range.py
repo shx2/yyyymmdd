@@ -2,10 +2,13 @@
 Unit-tests for DateRange.
 """
 
-import unittest
 import math
 import pickle
+import random
+import unittest
+
 from yyyymmdd import Date, DateRange
+
 from .test_date import TEST_DATES
 
 ################################################################################
@@ -22,6 +25,7 @@ TEST_RANGES = dict(
 
 
 ################################################################################
+
 
 class DateRangeTest(unittest.TestCase):
     """
@@ -63,10 +67,14 @@ class DateRangeTest(unittest.TestCase):
                         self.assertEqual(d in r, d in datelist)
                         self.assertEqual(d.as_datetime_date() in r, d in datelist)
                         self.assertEqual(r.count(d), datelist.count(d))
-                        self.assertEqual(r.count(d.as_datetime_date()), datelist.count(d))
+                        self.assertEqual(
+                            r.count(d.as_datetime_date()), datelist.count(d)
+                        )
                         if d in datelist:
                             self.assertEqual(r.index(d), datelist.index(d))
-                            self.assertEqual(r.index(d.as_datetime_date()), datelist.index(d))
+                            self.assertEqual(
+                                r.index(d.as_datetime_date()), datelist.index(d)
+                            )
                         else:
                             self.assertRaises(ValueError, r.index, d)
                             self.assertRaises(ValueError, r.index, d.as_datetime_date())
@@ -86,7 +94,7 @@ class DateRangeTest(unittest.TestCase):
         r = DateRange(int(str(start)), int(str(stop)))
         self.assertEqual(r0, r)
         # relative to today
-        r = DateRange('-10', '+10')
+        r = DateRange("-10", "+10")
         self.assertEqual(r, DateRange(Date.today() - 10, Date.today() + 10))
 
     def test_from_string(self):
@@ -94,25 +102,27 @@ class DateRangeTest(unittest.TestCase):
         r = DateRange(D1, D1 + 1)
         self.assertEqual(r, DateRange.from_string(str(D1)))
         self.assertEqual(r, DateRange.from_string(str(r)))
-        self.assertEqual(r, DateRange.from_string(D1.strftime('%Y-%m-%d')))
+        self.assertEqual(r, DateRange.from_string(D1.strftime("%Y-%m-%d")))
         # start and stop
         r = DateRange(D1, D1 + 100)
         self.assertEqual(r, DateRange.from_string(str(r)))
-        self.assertEqual(r, DateRange.from_string('%s:%s' % (r.start, r.stop)))
+        self.assertEqual(r, DateRange.from_string("%s:%s" % (r.start, r.stop)))
         # start, stop and step
         r = DateRange(D1, D1 + 100, 7)
         self.assertEqual(r, DateRange.from_string(str(r)))
-        self.assertEqual(r, DateRange.from_string('%s:%s:%s' % (r.start, r.stop, r.step)))
+        self.assertEqual(
+            r, DateRange.from_string("%s:%s:%s" % (r.start, r.stop, r.step))
+        )
         # relatives and negatives
-        r1 = DateRange('+30', -50, -2)
-        r2 = DateRange.from_string('+30:-50:-2')
+        r1 = DateRange("+30", -50, -2)
+        r2 = DateRange.from_string("+30:-50:-2")
         self.assertEqual(r1, r2)
         self.assertEqual(len(r2), 40)
         # aliases
-        self.assertEqual(DateRange.from_string('NONE'), DateRange.empty())
-        self.assertEqual(DateRange.from_string('EMPTY'), DateRange.empty())
-        self.assertEqual(DateRange.from_string('ALL'), DateRange.full())
-        self.assertEqual(DateRange.from_string('FULL'), DateRange.full())
+        self.assertEqual(DateRange.from_string("NONE"), DateRange.empty())
+        self.assertEqual(DateRange.from_string("EMPTY"), DateRange.empty())
+        self.assertEqual(DateRange.from_string("ALL"), DateRange.full())
+        self.assertEqual(DateRange.from_string("FULL"), DateRange.full())
         for r in [DateRange.empty(), DateRange.full()]:
             self.assertEqual(r, DateRange.from_string(str(r)))
 
@@ -148,6 +158,22 @@ class DateRangeTest(unittest.TestCase):
             r2 = pickle.loads(pickle.dumps(r1))
             self.assertEqual(r1, r2)
             self.assertEqual(type(r1), type(r2))
+
+    def test_mereology(self):
+        for _ in range(1000):
+            d1 = DateRange.DATE_TYPE.fromordinal(random.randint(0, 1000000))
+            d2 = d1 + random.randint(1, 100)
+            dr = DateRange(d1, d2)  # non-empty
+            self.assertFalse(dr < dr)
+            self.assertFalse(dr > dr)
+            self.assertTrue(dr.overlaps(dr))
+            self.assertTrue(dr <= dr)
+            self.assertTrue(dr >= dr)
+            self.assertTrue(dr.underlaps(dr))
+            self.assertTrue(dr | dr == dr)
+            self.assertTrue((dr - dr) == [DateRange.empty()])
+
+        self.assertFalse(DateRange.empty().overlaps(DateRange.empty()))
 
 
 ################################################################################
