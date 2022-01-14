@@ -269,6 +269,16 @@ class DateRangeTest(unittest.TestCase):
             - DateRange.from_string("20220101:20220102"),
             [DateRange.from_string("20220103:20220110")],
         )
+        self.assertEqual(
+            DateRange.from_string("20220105:20220110")
+            - DateRange.from_string("20220101:20220107"),
+            [DateRange(20220107, 20220110)],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220101:20220107")
+            - DateRange.from_string("20220105:20220110"),
+            [DateRange(20220101, 20220105)],
+        )
 
     def test_mereology_errors(self):
         dr1 = DateRange(Date("2014-01-01"), Date("2014-01-11"), 2)
