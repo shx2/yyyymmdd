@@ -175,5 +175,93 @@ class DateRangeTest(unittest.TestCase):
 
         self.assertFalse(DateRange.empty().overlaps(DateRange.empty()))
 
+    def test_mereology2(self):
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").overlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").underlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106")
+            < DateRange.from_string("20220103:20220110")
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106")
+            <= DateRange.from_string("20220103:20220110")
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220106")
+            > DateRange.from_string("20220103:20220110")
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220106")
+            >= DateRange.from_string("20220103:20220110")
+        )
+        self.assertTrue(
+            DateRange.from_string("20220102:20220106").overlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220102:20220106").underlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106")
+            < DateRange.from_string("20220103:20220110")
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106")
+            <= DateRange.from_string("20220103:20220110")
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106")
+            > DateRange.from_string("20220103:20220110")
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106")
+            >= DateRange.from_string("20220103:20220110")
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            & DateRange.from_string("20211231:20220106"),
+            DateRange.from_string("20220103:20220106"),
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20211231:20220106"),
+            [DateRange.from_string("20220106:20220110")],
+        )
+        self.assertEqual(
+            (
+                DateRange.from_string("20220103:20220110")
+                & DateRange.from_string("20211231:20220106")
+            )
+            | (
+                DateRange.from_string("20220103:20220110")
+                - DateRange.from_string("20211231:20220106")
+            )[0],
+            DateRange.from_string("20220103:20220110"),
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220106:20220113"),
+            [DateRange.from_string("20220103:20220106")],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220104:20220108"),
+            [
+                DateRange.from_string("20220103:20220104"),
+                DateRange.from_string("20220108:20220110"),
+            ],
+        )
+
 
 ################################################################################
