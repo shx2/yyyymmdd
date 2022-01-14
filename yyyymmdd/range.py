@@ -548,7 +548,7 @@ class DateRange(object):
                     return [part2]
                 return [DateRange.empty()]
         else:
-            return self
+            return [self]
 
     # ===========================================================================
     # privates

@@ -164,6 +164,8 @@ class DateRangeTest(unittest.TestCase):
             d1 = DateRange.DATE_TYPE.fromordinal(random.randint(0, 1000000))
             d2 = d1 + random.randint(1, 100)
             dr = DateRange(d1, d2)  # non-empty
+            self.assertTrue(DateRange.empty() < dr)
+            self.assertTrue(DateRange.empty() <= dr)
             self.assertFalse(dr < dr)
             self.assertFalse(dr > dr)
             self.assertTrue(dr.overlaps(dr))
@@ -262,6 +264,37 @@ class DateRangeTest(unittest.TestCase):
                 DateRange.from_string("20220108:20220110"),
             ],
         )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220101:20220102"),
+            [DateRange.from_string("20220103:20220110")],
+        )
+
+    def test_mereology_errors(self):
+        dr1 = DateRange(Date("2014-01-01"), Date("2014-01-11"), 2)
+        dr2 = DateRange(Date("2014-01-01"), Date("2014-01-05"), 2)
+        with self.assertRaises(ValueError):
+            dr1.overlaps(dr2)
+        with self.assertRaises(ValueError):
+            dr1.is_adjacent(dr2)
+        with self.assertRaises(ValueError):
+            dr1.underlaps(dr2)
+        with self.assertRaises(ValueError):
+            dr1 < dr2
+        with self.assertRaises(ValueError):
+            dr1 <= dr2
+        with self.assertRaises(ValueError):
+            dr1 > dr2
+        with self.assertRaises(ValueError):
+            dr1 >= dr2
+        with self.assertRaises(ValueError):
+            dr1 - dr2
+        with self.assertRaises(ValueError):
+            dr1 | dr2
+        with self.assertRaises(ValueError):
+            DateRange(Date("2014-01-01"), Date("2014-01-11")).union(
+                DateRange(Date("2014-01-12"), Date("2014-01-16"))
+            )
 
 
 ################################################################################
