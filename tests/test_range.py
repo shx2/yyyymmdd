@@ -2,10 +2,10 @@
 Unit-tests for DateRange.
 """
 
+import unittest
 import math
 import pickle
 import random
-import unittest
 
 from yyyymmdd import Date, DateRange
 
@@ -164,16 +164,14 @@ class DateRangeTest(unittest.TestCase):
             d1 = DateRange.DATE_TYPE.fromordinal(random.randint(0, 1000000))
             d2 = d1 + random.randint(1, 100)
             dr = DateRange(d1, d2)  # non-empty
-            self.assertTrue(DateRange.empty() < dr)
-            self.assertTrue(DateRange.empty() <= dr)
-            self.assertFalse(dr < dr)
-            self.assertFalse(dr > dr)
+            self.assertTrue(DateRange.empty().is_proper_part(dr))
+            self.assertTrue(DateRange.empty().is_part(dr))
+            self.assertFalse(dr.is_proper_part(dr))
             self.assertTrue(dr.overlaps(dr))
-            self.assertTrue(dr <= dr)
-            self.assertTrue(dr >= dr)
+            self.assertTrue(dr.is_part(dr))
             self.assertTrue(dr.underlaps(dr))
             self.assertTrue(dr | dr == dr)
-            self.assertTrue((dr - dr) == [DateRange.empty()])
+            self.assertTrue((dr - dr) == [])
 
         self.assertFalse(DateRange.empty().overlaps(DateRange.empty()))
 
@@ -189,20 +187,24 @@ class DateRangeTest(unittest.TestCase):
             )
         )
         self.assertTrue(
-            DateRange.from_string("20220103:20220106")
-            < DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220106").is_proper_part(
+                DateRange.from_string("20220103:20220110")
+            )
         )
         self.assertTrue(
-            DateRange.from_string("20220103:20220106")
-            <= DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220106").is_part(
+                DateRange.from_string("20220103:20220110")
+            )
         )
         self.assertFalse(
-            DateRange.from_string("20220103:20220106")
-            > DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220110").is_proper_part(
+                DateRange.from_string("20220103:20220106")
+            )
         )
         self.assertFalse(
-            DateRange.from_string("20220103:20220106")
-            >= DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220110").is_part(
+                DateRange.from_string("20220103:20220106")
+            )
         )
         self.assertTrue(
             DateRange.from_string("20220102:20220106").overlaps(
@@ -215,20 +217,24 @@ class DateRangeTest(unittest.TestCase):
             )
         )
         self.assertFalse(
-            DateRange.from_string("20220102:20220106")
-            < DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220102:20220106").is_proper_part(
+                DateRange.from_string("20220103:20220110")
+            )
         )
         self.assertFalse(
-            DateRange.from_string("20220102:20220106")
-            <= DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220102:20220106").is_part(
+                DateRange.from_string("20220103:20220110")
+            )
         )
         self.assertFalse(
-            DateRange.from_string("20220102:20220106")
-            > DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220110").is_proper_part(
+                DateRange.from_string("20220102:20220106")
+            )
         )
         self.assertFalse(
-            DateRange.from_string("20220102:20220106")
-            >= DateRange.from_string("20220103:20220110")
+            DateRange.from_string("20220103:20220110").is_part(
+                DateRange.from_string("20220102:20220106")
+            )
         )
         self.assertEqual(
             DateRange.from_string("20220103:20220110")
@@ -283,20 +289,19 @@ class DateRangeTest(unittest.TestCase):
     def test_mereology_errors(self):
         dr1 = DateRange(Date("2014-01-01"), Date("2014-01-11"), 2)
         dr2 = DateRange(Date("2014-01-01"), Date("2014-01-05"), 2)
-        with self.assertRaises(ValueError):
-            dr1.overlaps(dr2)
+        self.assertTrue(dr1.overlaps(dr2))
         with self.assertRaises(ValueError):
             dr1.is_adjacent(dr2)
         with self.assertRaises(ValueError):
             dr1.underlaps(dr2)
         with self.assertRaises(ValueError):
-            dr1 < dr2
+            dr1.is_proper_part(dr2)
         with self.assertRaises(ValueError):
-            dr1 <= dr2
+            dr1.is_part(dr2)
         with self.assertRaises(ValueError):
-            dr1 > dr2
+            dr2.is_proper_part(dr1)
         with self.assertRaises(ValueError):
-            dr1 >= dr2
+            dr2.is_part(dr1)
         with self.assertRaises(ValueError):
             dr1 - dr2
         with self.assertRaises(ValueError):

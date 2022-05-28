@@ -356,7 +356,7 @@ class DateRange(object):
         # return empty Range if either ranges is empty
         empty = self.empty()
         if not self or not other:
-            return empty()
+            return empty
 
         # both directions are the same
         step0, step1, sign, offset = (
@@ -372,7 +372,7 @@ class DateRange(object):
         )  # calculate the coprime intervals
         step = interval0 * interval1 * gcd * sign
         if offset % gcd != 0:  # return empty result if offset not alligned on gcd
-            return empty()
+            return empty
 
         # Apply Chinese Remainder Theorem
         # x % interval1 means inverse_mod(interval0, interval1)
@@ -393,37 +393,39 @@ class DateRange(object):
     # mereological part structure
     # ===========================================================================
 
-    def __lt__(self, other):
-        return self.is_proper_part(other)
-
-    def __gt__(self, other):
-        return other.is_proper_part(self)
-
-    def __le__(self, other):
+    def _ensure_unit_step(self, other):
+        """
+        Mereological function check: This range and `other` must have step=1.
+        """
         if self.step != 1 or other.step != 1:
             raise ValueError(
                 "Mereological methods are undefined for ranges with steps != 1: %r & %r"
                 % (self, other)
             )
+
+    def is_part(self, other):
+        """
+        Tests whether this DateRange is a part of (is fully contained in)
+        the given DateRange other.
+
+        X is a part of Y if every part of X is inside Y, including the
+        case where X=Y.
+        This function only works if both X and Y have step=1.
+        """
+        self._ensure_unit_step(other)
         if not bool(self._ordrange):
             return True
         return (other._ordrange.start <= self._ordrange.start) and (
             self._ordrange.stop <= other._ordrange.stop
         )
 
-    def __ge__(self, other):
-        return other <= self
-
     def is_adjacent(self, other):
         """
         Tests whether this DateRange is adjacent to (externally connected)
         to the given DateRange other.
+        This function only works if both this range and `other` have step=1.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
+        self._ensure_unit_step(other)
         return (self._ordrange.stop == other._ordrange.start) or (
             other._ordrange.stop == self._ordrange.start
         )
@@ -434,12 +436,9 @@ class DateRange(object):
         contained in) the given DateRange other.
 
         X is a proper part of Y if X is a part of Y and Y is not a part of X.
+        This function only works if both X and Y have step=1.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
+        self._ensure_unit_step(other)
         if not bool(self._ordrange):
             return True
         return (
@@ -454,27 +453,16 @@ class DateRange(object):
 
         X and Y overlap if there is a part of X that is also a part of Y.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
-        return (bool(self._ordrange) and bool(other._ordrange)) and (
-            (other._ordrange.start <= self._ordrange.start < other._ordrange.stop)
-            or (self._ordrange.start <= other._ordrange.start < self._ordrange.stop)
-        )
+        return bool(self.intersection(other))
 
     def underlaps(self, other):
         """
         Finds the underlap of this DateRange and the given DateRange other.
 
         The X and Y underlap if X and Y overlap or are adjacent.
+        This function only works if both X and Y have step=1.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
+        self._ensure_unit_step(other)
         return self.is_adjacent(other) or self.overlaps(other)
 
     def __or__(self, other):
@@ -485,12 +473,9 @@ class DateRange(object):
         Computes the union of this DateRange and the given DateRange other.
 
         The union of X and Y is only defined if X and Y underlap.
+        This function only works if both X and Y have step=1.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
+        self._ensure_unit_step(other)
         if not self.underlaps(other):
             raise ValueError(
                 "DateRange union is undefined for ranges that are not adjacent and do not overlap: %r & %r"
@@ -512,11 +497,7 @@ class DateRange(object):
         This method returns a list, because the difference can result
         up to two contiguous date ranges.
         """
-        if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
-                % (self, other)
-            )
+        self._ensure_unit_step(other)
         # ***A***
         #   ***B***
         # gives:
@@ -546,7 +527,7 @@ class DateRange(object):
             else:
                 if part2:
                     return [part2]
-                return [DateRange.empty()]
+                return []
         else:
             return [self]
 
