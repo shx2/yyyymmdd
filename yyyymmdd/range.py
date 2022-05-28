@@ -3,8 +3,8 @@ The ``DateRange`` class.
 """
 
 from .date import Date
-from .misc import classproperty
-from .misc import egcd as _egcd
+from .misc import classproperty, egcd as _egcd
+
 
 ################################################################################
 # The DateRange class
@@ -24,10 +24,10 @@ class DateRange(object):
     """
 
     DATE_TYPE = Date
-    DELIM = ":"
-    OTHER_SIDE_MARKER = "%"
-    EMPTY_RANGE_STRING = "NONE"
-    FULL_RANGE_STRING = "ALL"
+    DELIM = ':'
+    OTHER_SIDE_MARKER = '%'
+    EMPTY_RANGE_STRING = 'NONE'
+    FULL_RANGE_STRING = 'ALL'
 
     # ===============================================================================================
     # ctor
@@ -111,7 +111,7 @@ class DateRange(object):
         try:
             return self._ordrange.index(ordinal)
         except ValueError:
-            raise ValueError("%r is not in range" % date) from None
+            raise ValueError('%r is not in range' % date) from None
 
     def count(self, date):
         """ Same as ``range.count``. """
@@ -140,17 +140,10 @@ class DateRange(object):
     # str and repr
     # ===========================================================================
 
-    def to_string(
-        self,
-        opening_bracket="[",
-        closing_bracket=")",
-        *,
-        date_format=None,
-        delim=None,
-        step_delim=None,
-        include_step=None,
-        empty_range_string=EMPTY_RANGE_STRING
-    ):
+    def to_string(self,
+                  opening_bracket='[', closing_bracket=')', *,
+                  date_format=None, delim=None, step_delim=None, include_step=None,
+                  empty_range_string=EMPTY_RANGE_STRING):
 
         if empty_range_string is not None and not self:
             return empty_range_string
@@ -173,7 +166,7 @@ class DateRange(object):
             tokens.extend([step_delim, str(self.step)])
 
         tokens.append(closing_bracket)
-        return "".join(tokens)
+        return ''.join(tokens)
 
     def __str__(self):
         return self.to_string()
@@ -182,7 +175,7 @@ class DateRange(object):
         tokens = [self.start, self.stop]
         if self.step != 1:
             tokens.append(self.step)
-        return "%s(%s)" % (type(self).__name__, ", ".join([str(x) for x in tokens]))
+        return '%s(%s)' % (type(self).__name__, ', '.join([str(x) for x in tokens]))
 
     # ===========================================================================
     # from string
@@ -206,13 +199,13 @@ class DateRange(object):
         DateRange(20120704, 20120706)
         """
 
-        if s in (cls.FULL_RANGE_STRING, "FULL"):
+        if s in (cls.FULL_RANGE_STRING, 'FULL'):
             return cls.full()
-        if s in (cls.EMPTY_RANGE_STRING, "EMPTY"):
+        if s in (cls.EMPTY_RANGE_STRING, 'EMPTY'):
             return cls.empty()
 
         # remove brackets:
-        if s.startswith("[") and s.endswith(")"):
+        if s.startswith('[') and s.endswith(')'):
             s = s[1:-1]
 
         # split to parts:
@@ -227,10 +220,10 @@ class DateRange(object):
             # start and stop, and possibly step
 
             def has_marker(p, m=cls.OTHER_SIDE_MARKER):
-                return (p == m) or (p.startswith(m) and p[len(m)] in "+-")
+                return (p == m) or (p.startswith(m) and p[len(m)] in '+-')
 
             def relative_to(part, rel_to, m=cls.OTHER_SIDE_MARKER):
-                offset_str = part[len(cls.OTHER_SIDE_MARKER) :]
+                offset_str = part[len(cls.OTHER_SIDE_MARKER):]
                 if offset_str:
                     # e.g. '%+10'
                     offset = int(offset_str)
@@ -257,7 +250,7 @@ class DateRange(object):
             return cls(d1, d2, step)
 
         else:
-            raise ValueError("Invalid %s string: %r" % (cls.__name__, s))
+            raise ValueError('Invalid %s string: %r' % (cls.__name__, s))
 
     # ===========================================================================
     # misc
@@ -266,9 +259,9 @@ class DateRange(object):
     def replace(self, *, start=None, stop=None, step=None):
         """ Create a range like self, with different parts (start/stop/step) """
         kwargs = {}
-        kwargs["start"] = start if start is not None else self.start
-        kwargs["stop"] = stop if stop is not None else self.stop
-        kwargs["step"] = step if step is not None else self.step
+        kwargs['start'] = start if start is not None else self.start
+        kwargs['stop'] = stop if stop is not None else self.stop
+        kwargs['step'] = step if step is not None else self.step
         return type(self)(**kwargs)
 
     @classproperty
@@ -305,7 +298,7 @@ class DateRange(object):
         """
         if len(self) == 1:
             return str(self[0])
-        return self.to_string("", "")
+        return self.to_string('', '')
 
     # ===========================================================================
     # Intersection
@@ -324,34 +317,18 @@ class DateRange(object):
 
         # check steps have the same sign
         if (self.step > 0) != (other.step > 0):
-            raise ValueError(
-                "Intersection is undefined for steps with opposite signs: %r & %r"
-                % (self, other)
-            )
+            raise ValueError('Intersection is undefined for steps with opposite signs: %r & %r' % (
+                self, other))
 
         # more helpers
 
         def stop_min(x, y):
-            return (
-                None
-                if x is None and y is None
-                else x
-                if y is None
-                else y
-                if x is None
-                else min(x, y)
-            )
+            return None if x is None and y is None \
+                else x if y is None else y if x is None else min(x, y)
 
         def stop_max_inv(x, y):
-            return (
-                None
-                if x is None and y is None
-                else x
-                if y is None
-                else y
-                if x is None
-                else max(x, y)
-            )
+            return None if x is None and y is None \
+                else x if y is None else y if x is None else max(x, y)
 
         # return empty Range if either ranges is empty
         empty = self.empty()
