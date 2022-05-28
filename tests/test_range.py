@@ -6,9 +6,7 @@ import unittest
 import math
 import pickle
 import random
-
 from yyyymmdd import Date, DateRange
-
 from .test_date import TEST_DATES
 
 ################################################################################

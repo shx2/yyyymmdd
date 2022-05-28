@@ -9,7 +9,6 @@ from .misc import classproperty, egcd as _egcd
 ################################################################################
 # The DateRange class
 
-
 class DateRange(object):
     """
     A `range <https://docs.python.org/3.8/library/functions.html#func-range>`_ -like type, whose
