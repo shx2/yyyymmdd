@@ -336,17 +336,10 @@ class DateRange(object):
             return empty
 
         # both directions are the same
-        step0, step1, sign, offset = (
-            abs(self.step),
-            abs(other.step),
-            (self.step > 0) - (self.step < 0),
-            other.start - self.start,
-        )
+        step0, step1, sign, offset = (abs(self.step), abs(other.step),
+                                      (self.step > 0) - (self.step < 0), other.start - self.start)
         gcd, x, y = _egcd(step0, step1)
-        interval0, interval1 = (
-            step0 // gcd,
-            step1 // gcd,
-        )  # calculate the coprime intervals
+        interval0, interval1 = step0 // gcd, step1 // gcd  # calculate the coprime intervals
         step = interval0 * interval1 * gcd * sign
         if offset % gcd != 0:  # return empty result if offset not alligned on gcd
             return empty
@@ -359,11 +352,7 @@ class DateRange(object):
             gap = offset - crt
             filler = gap if 0 == gap % step else (gap // step + 1) * step
         start = self.start + crt + filler
-        stop = (
-            stop_min(self.stop, other.stop)
-            if sign > 0
-            else stop_max_inv(self.stop, other.stop)
-        )
+        stop = stop_min(self.stop, other.stop) if sign > 0 else stop_max_inv(self.stop, other.stop)
         return type(self)(start, stop, step)
 
     # ===========================================================================
