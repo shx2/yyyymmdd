@@ -538,13 +538,13 @@ class DateRange(object):
             part2 = DateRange(
                 self._o2d(other._ordrange.stop), self._o2d(self._ordrange.stop)
             )
-            if bool(part1):
-                if bool(part2):
+            if part1:
+                if part2:
                     return [part1, part2]
                 else:
                     return [part1]
             else:
-                if bool(part2):
+                if part2:
                     return [part2]
                 return [DateRange.empty()]
         else:
