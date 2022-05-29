@@ -281,21 +281,21 @@ class DateRangeTest(unittest.TestCase):
         dr1 = DateRange(Date("2014-01-01"), Date("2014-01-11"), 2)
         dr2 = DateRange(Date("2014-01-01"), Date("2014-01-05"), 2)
         self.assertTrue(dr1.overlaps(dr2))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1.is_adjacent(dr2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1.underlaps(dr2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1.is_proper_part(dr2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1.is_part(dr2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr2.is_proper_part(dr1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr2.is_part(dr1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1 - dr2
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             dr1 | dr2
         with self.assertRaises(ValueError):
             DateRange(Date("2014-01-01"), Date("2014-01-11")).union(

@@ -363,8 +363,8 @@ class DateRange(object):
         Mereological function check: This range and `other` must have step=1.
         """
         if self.step != 1 or other.step != 1:
-            raise ValueError(
-                "Mereological methods are undefined for ranges with steps != 1: %r & %r"
+            raise NotImplementedError(
+                "Mereological methods are currently undefined for ranges with steps != 1: %r & %r"
                 % (self, other)
             )
 
