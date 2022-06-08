@@ -151,6 +151,7 @@ class DateRangeTest(unittest.TestCase):
             self.assertEqual(type(r1), type(r2))
 
     def test_mereology(self):
+        random.seed(42)
         for _ in range(1000):
             d1 = DateRange.DATE_TYPE.fromordinal(random.randint(0, 1000000))
             d2 = d1 + random.randint(1, 100)
