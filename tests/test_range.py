@@ -5,6 +5,7 @@ Unit-tests for DateRange.
 import unittest
 import math
 import pickle
+import random
 from yyyymmdd import Date, DateRange
 from .test_date import TEST_DATES
 
@@ -148,6 +149,159 @@ class DateRangeTest(unittest.TestCase):
             r2 = pickle.loads(pickle.dumps(r1))
             self.assertEqual(r1, r2)
             self.assertEqual(type(r1), type(r2))
+
+    def test_mereology(self):
+        random.seed(42)
+        for _ in range(1000):
+            d1 = DateRange.DATE_TYPE.fromordinal(random.randint(0, 1000000))
+            d2 = d1 + random.randint(1, 100)
+            dr = DateRange(d1, d2)  # non-empty
+            self.assertTrue(DateRange.empty().is_proper_part(dr))
+            self.assertTrue(DateRange.empty().is_part(dr))
+            self.assertFalse(dr.is_proper_part(dr))
+            self.assertTrue(dr.overlaps(dr))
+            self.assertTrue(dr.is_part(dr))
+            self.assertTrue(dr.underlaps(dr))
+            self.assertTrue(dr | dr == dr)
+            self.assertTrue((dr - dr) == [])
+
+        self.assertFalse(DateRange.empty().overlaps(DateRange.empty()))
+
+    def test_mereology2(self):
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").overlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").underlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").is_proper_part(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220103:20220106").is_part(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220110").is_proper_part(
+                DateRange.from_string("20220103:20220106")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220110").is_part(
+                DateRange.from_string("20220103:20220106")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220102:20220106").overlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertTrue(
+            DateRange.from_string("20220102:20220106").underlaps(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106").is_proper_part(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220102:20220106").is_part(
+                DateRange.from_string("20220103:20220110")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220110").is_proper_part(
+                DateRange.from_string("20220102:20220106")
+            )
+        )
+        self.assertFalse(
+            DateRange.from_string("20220103:20220110").is_part(
+                DateRange.from_string("20220102:20220106")
+            )
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            & DateRange.from_string("20211231:20220106"),
+            DateRange.from_string("20220103:20220106"),
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20211231:20220106"),
+            [DateRange.from_string("20220106:20220110")],
+        )
+        self.assertEqual(
+            (
+                DateRange.from_string("20220103:20220110")
+                & DateRange.from_string("20211231:20220106")
+            )
+            | (
+                DateRange.from_string("20220103:20220110")
+                - DateRange.from_string("20211231:20220106")
+            )[0],
+            DateRange.from_string("20220103:20220110"),
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220106:20220113"),
+            [DateRange.from_string("20220103:20220106")],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220104:20220108"),
+            [
+                DateRange.from_string("20220103:20220104"),
+                DateRange.from_string("20220108:20220110"),
+            ],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220103:20220110")
+            - DateRange.from_string("20220101:20220102"),
+            [DateRange.from_string("20220103:20220110")],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220105:20220110")
+            - DateRange.from_string("20220101:20220107"),
+            [DateRange(20220107, 20220110)],
+        )
+        self.assertEqual(
+            DateRange.from_string("20220101:20220107")
+            - DateRange.from_string("20220105:20220110"),
+            [DateRange(20220101, 20220105)],
+        )
+
+    def test_mereology_errors(self):
+        dr1 = DateRange(Date("2014-01-01"), Date("2014-01-11"), 2)
+        dr2 = DateRange(Date("2014-01-01"), Date("2014-01-05"), 2)
+        self.assertTrue(dr1.overlaps(dr2))
+        with self.assertRaises(NotImplementedError):
+            dr1.is_adjacent(dr2)
+        with self.assertRaises(NotImplementedError):
+            dr1.underlaps(dr2)
+        with self.assertRaises(NotImplementedError):
+            dr1.is_proper_part(dr2)
+        with self.assertRaises(NotImplementedError):
+            dr1.is_part(dr2)
+        with self.assertRaises(NotImplementedError):
+            dr2.is_proper_part(dr1)
+        with self.assertRaises(NotImplementedError):
+            dr2.is_part(dr1)
+        with self.assertRaises(NotImplementedError):
+            dr1 - dr2
+        with self.assertRaises(NotImplementedError):
+            dr1 | dr2
+        with self.assertRaises(ValueError):
+            DateRange(Date("2014-01-01"), Date("2014-01-11")).union(
+                DateRange(Date("2014-01-12"), Date("2014-01-16"))
+            )
 
 
 ################################################################################
